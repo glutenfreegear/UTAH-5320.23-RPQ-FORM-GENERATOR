@@ -20,7 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.1
       - uses: DeterminateSystems/nix-installer-action@v21
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix build
       - run: nix flake check
       - name: Copy build artifacts
