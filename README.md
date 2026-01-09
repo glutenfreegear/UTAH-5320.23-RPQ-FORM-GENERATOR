@@ -1,15 +1,16 @@
 # ATF Form 5320.23 Generator
 
-A client-side web application for generating PDFs of ATF Form 5320.23 (National Firearms Act Responsible Person Questionnaire). This tool processes forms entirely in your browser using WebAssembly - no data is sent to external servers.
+A client-side web application for generating PDFs of ATF Form 5320.23 (National Firearms Act Responsible Person Questionnaire). All processing happens in your browser using WebAssembly - no data is sent to external servers.
 
-## 🔗 Live Application
+## Live Application
 
 Access the form generator at: **https://schlarpc.github.io/atf-5320.23-generator/**
 
 ## Features
 
 - **Complete client-side processing** - Your data never leaves your browser
-- **Auto-save functionality** - Form state is preserved in the URL for bookmarking
+- **Auto-save functionality** - Form state preserved in the URL for bookmarking
+- **Signature capture** - Draw your signature directly in the browser
 - **PDF generation** - Creates properly formatted ATF Form 5320.23 PDFs
 - **Form validation** - Real-time validation with inline error messages
 - **Smart field interactions** - Auto-formatting for phone numbers, SSNs, and conditional field enabling
@@ -48,16 +49,17 @@ npm run type-check
 The project uses:
 
 - **TypeScript** with strict configuration
-- **Webpack** for bundling with WebAssembly support
+- **Vite** for bundling with WebAssembly support
 - **mupdf.js** for client-side PDF manipulation
+- **autopen** for signature capture and serialization
 - **Nix** for reproducible builds and deployment
 
 ### Project Structure
 
-- `src/index.ts` - Main TypeScript application with PDF generation logic
-- `index.html` - Complete form implementation with embedded styles
-- `static/` - Contains the official ATF form PDF template
-- `flake.nix` - Nix build configuration for reproducible builds
+- `src/` - TypeScript modules (PDF generation, form logic, signature handling)
+- `index.html` - Form UI
+- `static/` - PDF template and styles
+- `flake.nix` - Nix build configuration
 
 ## Privacy & Security
 

@@ -4,102 +4,63 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an NFA Form processor project that generates PDFs for ATF Form 5320.23 (National Firearms Act Responsible Person Questionnaire). The project consists of a client-side TypeScript application that uses mupdf.js for PDF manipulation and includes a complete HTML form with embedded JavaScript for form handling.
+A client-side web application for generating ATF Form 5320.23 (National Firearms Act Responsible Person Questionnaire) PDFs. All processing happens in the browser using mupdf.js (WebAssembly) - no data is transmitted to servers.
 
 ## Build Commands
 
-- `npm run build` - Build production bundle
-- `npm run dev` - Start development server on port 8080
-- `npm run type-check` - Run TypeScript type checking without emitting files
-- `nix build` - Build project using Nix (preferred for production)
-- `nix flake check` - Validate Nix flake configuration
-
-## Development Environment
-
-The project uses:
-
-- TypeScript with strict configuration
-- Webpack for bundling with WebAssembly support for mupdf
-- Development server with hot reload on port 8080
-- Local state management via URL hash for form persistence
-- Nix for reproducible builds and deployment
+- `npm run dev` - Start Vite development server (port 8080, auto-opens browser)
+- `npm run build` - Build production bundle to `dist/`
+- `npm run preview` - Preview production build
+- `npm run type-check` - Run TypeScript type checking
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `nix build` - Build with Nix (preferred for production/reproducibility)
 
 ## Architecture
 
-### Frontend (TypeScript/HTML)
+### TypeScript Modules (`src/`)
 
-- **Main entry**: `src/index.ts` - Contains PDF generation logic using mupdf.js
-- **UI**: `index.html` - Complete form implementation with inline CSS and JavaScript
-- **Form Features**:
-  - Client-side form validation with inline error messages
-  - URL hash-based state persistence for bookmarking
-  - Dynamic field enabling/disabling based on form logic
-  - Auto-formatting for phone numbers and SSNs
-  - Clear buttons for individual sections and entire form
+- **`index.ts`** - PDF generation entry point. Maps form data to PDF widget names and fills the template using mupdf.js. Handles signature embedding as JPEG stamp annotations.
+- **`form.ts`** - Form UI logic: validation, state management (URL hash persistence), dynamic field interactions, prefill configuration support.
+- **`signature.ts`** - Signature pad implementation using autopen library. Captures strokes, renders with Catmull-Rom splines, serializes to Z85.
+- **`types.ts`** - TypeScript interfaces for `NFAFormData`, `PrefillConfig`, and global `Window` extensions.
+- **`prefill-config.ts`** - Default prefill values for form fields.
 
-### Static Assets
+### Key Data Flow
 
-- **PDF Template**: `static/f_5320.23_national_firearms_act_nfa_responsible_person_questionnaire.pdf` - Official ATF form template
-- **Styles**: `static/styles.css` - Form styling
-- **Client Scripts**: `static/form.js` - Additional form handling logic
-
-## Key Implementation Details
-
-### Form State Management
-
-- Form data serialized to base64-encoded JSON in URL hash
-- Automatic saving on input/change events with debouncing
-- Special handling for default values (certification date defaults to today, only stored if different)
-
-### PDF Integration
-
-- Uses mupdf.js (WebAssembly) for client-side PDF processing
-- Webpack configured with `experiments.asyncWebAssembly: true`
-- Complex field mapping system between HTML form fields and PDF widget names
-- Widget alignment corrections for proper PDF field positioning
-
-### Security Features
-
-- Restrictive Content Security Policy implemented
-- All processing done client-side, no data sent to servers
-- Privacy notice emphasizing local processing
-
-### Nix Build System
-
-- **Flake structure**: Uses `importNpmLock.buildNodeModules` for dependency management
-- **Build process**: Links node modules, runs `npm run build`, copies output to `/dist`
-- **Development shell**: Provides Node.js environment with proper module linking
-
-## Form Field Mapping
-
-The form includes complex field relationships:
-
-- Question 3a address can auto-sync with Question 2
-- Question 6 has "Answer All No" bulk operation
-- Question 6m.2 depends on 6m.1 selection
-- Question 8 UPIN input depends on "Yes" selection
-- Various "Other" text inputs enabled by radio/checkbox selections
+1. Form state serialized to base64-encoded JSON in URL hash (auto-saves on input)
+2. `serializeForm()` extracts data from HTML form, normalizes to uppercase
+3. `mapFormDataToPdfFields()` converts form data to PDF widget name/value pairs
+4. mupdf.js fills widgets and embeds signature as stamp annotation
+5. Unnecessary PDF pages (3 & 4) are deleted before download
 
 ### PDF Widget Mapping
 
-The TypeScript code contains extensive mapping between HTML form fields and PDF widget names:
+The PDF has deeply nested widget names like `topmostSubform[0].Page1[0].applicantaddress[0]`. The TypeScript code maps HTML field names to these widget names. Key patterns:
 
-- Checkbox/radio selections use a special `SELECTED` symbol
-- Text fields are normalized to uppercase
-- Date fields are formatted as MM/DD/YYYY
-- Multi-line addresses are concatenated with newlines
-- Special alignment corrections applied to specific widgets
+- Checkboxes/radio buttons use a `SELECTED` symbol to toggle
+- Text fields normalized to uppercase
+- Dates formatted as MM/DD/YYYY
+- Multi-line fields joined with `\n`
+- CLEO copy pages (5-6) use `getCleoWidgetVariant()` to transform widget names
 
-## Testing
+### Form Field Dependencies
 
-No formal test framework is currently configured. Manual testing involves:
+- Q3a address syncs with Q2 when "Same as 2" checkbox is checked
+- Q6m.2 options depend on Q6m.1 selection (Yes enables Yes/No, No enables N/A)
+- Q8 UPIN input only enabled when "Yes" is selected
+- "Other" text inputs enabled only when corresponding radio/checkbox is selected
+- Prefill config can lock fields as readonly
 
-1. Running `npm run dev` to start development server
-2. Testing form validation and state persistence
-3. Verifying PDF field mapping and generation
+## Static Assets
+
+- **`static/f_5320.23_national_firearms_act_nfa_responsible_person_questionnaire.pdf`** - Official ATF form template
+- **`static/styles.css`** - Form styling
+
+## Nix Integration
+
+Uses `importNpmLock.buildNodeModules` for dependency management. Development shell includes `linkNodeModulesHook` for automatic node_modules symlinking with direnv.
 
 ## Deployment
 
-- **GitHub Pages**: Automatic deployment on push to main branch
-- **Build artifacts**: Static files served from `/dist` directory
-- **Nix integration**: Ensures reproducible builds across environments
+GitHub Actions deploys to GitHub Pages on push to main. Build output is static files in `dist/`.
