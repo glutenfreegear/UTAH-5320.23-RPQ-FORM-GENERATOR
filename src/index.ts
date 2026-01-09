@@ -431,7 +431,7 @@ async function generatePDF(): Promise<void> {
 
     console.log("Loading PDF form from static file...");
     const response = await fetch(
-      "/f_5320.23_national_firearms_act_nfa_responsible_person_questionnaire.pdf"
+      "./f_5320.23_national_firearms_act_nfa_responsible_person_questionnaire.pdf"
     );
 
     if (!response.ok) {
