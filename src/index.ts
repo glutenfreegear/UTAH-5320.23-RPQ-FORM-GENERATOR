@@ -473,7 +473,8 @@ async function generatePDF(): Promise<void> {
       ["topmostSubform[0].Page2[0].usacheckbox[0]", [1.5, 0, 1.5, 0]],
       ["topmostSubform[0].Page1[0].nhl[0]", [1, 0, 1, 0]],
       ["topmostSubform[0].Page1[0].w[0]", [1, 0, 1, 0]],
-      ["topmostSubform[0].Page1[0].#field[24]", [0, -0.5, 0, 0.5]],
+      // DOB field: expand height by 4 points total to prevent text clipping across PDF viewers
+      ["topmostSubform[0].Page1[0].#field[24]", [0, -2, 0, 2]],
     ];
 
     for (const [widgetName, rectDeltas] of alignmentChanges) {
@@ -490,6 +491,23 @@ async function generatePDF(): Promise<void> {
           widget.setRect(newRect);
           widget.update();
         }
+      }
+    }
+
+    // Fix DOB field font size to prevent clipping with font substitution across OS/viewers
+    // The default Helv 9pt can clip when substituted with Arial or other fonts in some viewers
+    console.log("Applying font fixes for cross-platform compatibility...");
+    const dobWidgetNames = [
+      "topmostSubform[0].Page1[0].#field[24]",
+      "topmostSubform[0].Page5[0].#field[22]", // CLEO copy variant
+    ];
+    for (const widgetName of dobWidgetNames) {
+      const widget = widgets.get(widgetName);
+      if (widget) {
+        // Reduce font from 9pt to 8pt for more headroom with font metric variations
+        widget.setDefaultAppearance("Helv", 8, [0]);
+        widget.update();
+        console.log(`Applied font fix to ${widgetName}`);
       }
     }
 
