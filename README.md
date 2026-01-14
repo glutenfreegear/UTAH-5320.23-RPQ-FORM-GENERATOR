@@ -4,7 +4,7 @@ A client-side web application for generating PDFs of ATF Form 5320.23 (National 
 
 ## Live Application
 
-Access the form generator at: **https://glutenfreegear.github.io/utah-5320/**
+Access the form generator at: **https://glutenfreegear.github.io/UTAH-5320.23-RPQ-FORM-GENERATOR/**
 
 ## Features
 
