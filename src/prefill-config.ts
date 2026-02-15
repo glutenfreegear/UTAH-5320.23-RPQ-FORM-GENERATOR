@@ -34,7 +34,7 @@ export const prefillConfig: PrefillConfig = {
   // Prefill Q5 fields as editable defaults
   q5_agencyName: { value: "UTAH DEPARTMENT OF PUBLIC SAFETY", readonly: true },
   q5_officialName: { value: "BEAU MASON", readonly: true },
-  q5_officialTitle: { value: "COMISSIONER", readonly: true },
+  q5_officialTitle: { value: "COMMISSIONER", readonly: true },
   q5_address: { value: "4501 S 2700 W, SALT LAKE CITY, UT 84129, UNITED STATES", readonly: true },
 
   // Prefill Q6 fields to NO
